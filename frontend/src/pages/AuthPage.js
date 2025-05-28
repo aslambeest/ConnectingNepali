@@ -34,7 +34,7 @@ export default function AuthPage() {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/auth/register', {
+      await axios.post('https://connectingnepali.onrender.com/api/auth/register', {
         name: form.name,
         email: form.email,
         password: form.password,
