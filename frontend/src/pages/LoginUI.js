@@ -15,7 +15,7 @@ export default function LoginUI() {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', form);
+      const res = await axios.post('https://connectingnepali.onrender.com/api/auth/login', form);
 
       // ✅ Save token and user
       localStorage.setItem('token', res.data.token);
