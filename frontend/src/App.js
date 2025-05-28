@@ -7,7 +7,8 @@ import Dashboard from './pages/Dashboard';     // Dashboard after login
 import PrivateRoute from './components/PrivateRoute'; // Wrapper for auth-protected routes
 //import logo from './assets/logo.png
 //import logo from './assets/Logo.png'; // If you're inside src/
-import logo from '../assets/logo.png';
+import logo from './assets/logo.png';
+
 
 
 // Dummy service detail pages
