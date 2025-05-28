@@ -8,9 +8,6 @@ import PrivateRoute from './components/PrivateRoute'; // Wrapper for auth-protec
 //import logo from './assets/logo.png
 //import logo from './assets/Logo.png'; // If you're inside src/
 import logo from './assets/Logo.png';
-
-
-
 // Dummy service detail pages
 import AirportPage from './pages/services/AirportPage';
 import HousingPage from './pages/services/HousingPage';
