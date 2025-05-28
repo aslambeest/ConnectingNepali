@@ -5,6 +5,9 @@ import AuthPage from './pages/AuthPage';       // Registration + login
 import LoginUI from './pages/LoginUI';         // Separate login page
 import Dashboard from './pages/Dashboard';     // Dashboard after login
 import PrivateRoute from './components/PrivateRoute'; // Wrapper for auth-protected routes
+//import logo from './assets/logo.png
+import logo from './assets/Nepali-Circle-Logo.png'; // If you're inside src/
+
 
 // Dummy service detail pages
 import AirportPage from './pages/services/AirportPage';
