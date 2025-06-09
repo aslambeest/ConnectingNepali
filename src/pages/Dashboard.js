@@ -1,11 +1,11 @@
-// src/pages/Dashboard.js
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation, Autoplay } from 'swiper/modules';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Star } from 'lucide-react';
+import { Menu } from '@headlessui/react';
 import toast from 'react-hot-toast';
 
 const services = [
@@ -43,15 +43,23 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
+
+    const stored = localStorage.getItem('googleUser');
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
   }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('googleUser');
     setIsLoggedIn(false);
+    setUser(null);
     navigate('/');
   };
 
@@ -64,14 +72,47 @@ export default function Dashboard() {
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
       <header className="bg-white px-6 py-4 flex justify-between items-center sticky top-0 z-10 border-b shadow-sm">
-        <h1 className="text-2xl font-bold text-blue-700">Nepali Circle</h1>
-        {isLoggedIn ? (
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Logout
-          </button>
+        {/* ✅ Logo + Brand */}
+        <div className="flex items-center space-x-3">
+          <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
+          <h1 className="text-2xl font-bold text-blue-700">Nepali Circle</h1>
+        </div>
+
+        {/* ✅ Auth Section */}
+        {user ? (
+          <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="flex items-center space-x-2 bg-blue-100 px-4 py-2 rounded-full hover:bg-blue-200 transition">
+              <img src={user.picture} alt="Profile" className="w-8 h-8 rounded-full border" />
+              <ChevronDown className="w-4 h-4 text-blue-700" />
+            </Menu.Button>
+            <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-white border border-gray-200 rounded-md shadow-lg focus:outline-none z-50">
+              <div className="px-4 py-3">
+                <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                <p className="text-xs text-gray-500">{user.email}</p>
+              </div>
+              <div className="border-t border-gray-100"></div>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={() => navigate('/profile')}
+                    className={`w-full text-left px-4 py-2 text-sm ${active ? 'bg-gray-100' : ''}`}
+                  >
+                    My Profile
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={handleLogout}
+                    className={`w-full text-left px-4 py-2 text-sm text-red-600 ${active ? 'bg-gray-100' : ''}`}
+                  >
+                    Logout
+                  </button>
+                )}
+              </Menu.Item>
+            </Menu.Items>
+          </Menu>
         ) : (
           <button
             onClick={() => navigate('/login-ui')}
@@ -82,15 +123,20 @@ export default function Dashboard() {
         )}
       </header>
 
+      {/* Welcome Section */}
       <section className="bg-white pt-10 px-4">
         <div className="w-full max-w-screen-xl mx-auto px-4">
           <div className="bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100 shadow p-8 text-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-3">Welcome, Nepali Immigrants!</h2>
+            <h2 className="text-4xl font-bold text-gray-800 mb-3">
+              {user ? `Welcome, ${user.name}!` : 'Welcome, Nepali Immigrants!'}
+            </h2>
             <p className="text-gray-700 text-lg">जहाँ नेपाली मनहरू जोडिन्छन्।</p>
           </div>
         </div>
       </section>
 
+
+      {/* Announcements Section */}
       <section className="bg-white pt-10 px-4">
         <div className="w-full max-w-screen-xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-8 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100 shadow min-h-[300px] w-full">
@@ -128,6 +174,7 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* Services Section */}
       <section className="bg-white pt-10 px-4">
         <div className="w-full max-w-screen-xl mx-auto px-4">
           <div className="bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100 shadow p-8">
