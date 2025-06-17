@@ -24,13 +24,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/login-ui" element={<LoginUI />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* Optional Protected Dashboard Route */}
+        {/* ✅ Protect root and dashboard */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={
@@ -40,27 +42,22 @@ function App() {
           }
         />
 
-        {/* Service Routes */}
-        <Route path="/services/airport-pickup-settlement-help" element={<AirportPage />} />
-        <Route path="/services/housing-assistance" element={<HousingPage />} />
-        <Route path="/services/sin-bank-id-setup" element={<SinBankPage />} />
-        <Route path="/services/student-support" element={<StudentPage />} />
-        <Route path="/services/job-connection" element={<JobPage />} />
-        <Route path="/services/community-support" element={<CommunityPage />} />
-        <Route path="/services/language-support" element={<LanguagePage />} />
-        <Route path="/services/nepali-directory" element={<DirectoryPage />} />
-        <Route path="/services/legal-immigration-help" element={<LegalPage />} />
-        <Route path="/services/new-to-canada" element={<NewCanada />} />
+        {/* Public routes */}
+        <Route path="/login-ui" element={<LoginUI />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* 404 */}
-        <Route
-          path="*"
-          element={
-            <div className="p-10 text-center text-xl text-red-600">
-              404 - Page Not Found
-            </div>
-          }
-        />
+        {/* Services */}
+        <Route path="/services/airport" element={<AirportPage />} />
+        <Route path="/services/housing" element={<HousingPage />} />
+        <Route path="/services/sin-bank" element={<SinBankPage />} />
+        <Route path="/services/student" element={<StudentPage />} />
+        <Route path="/services/jobs" element={<JobPage />} />
+        <Route path="/services/community" element={<CommunityPage />} />
+        <Route path="/services/language" element={<LanguagePage />} />
+        <Route path="/services/directory" element={<DirectoryPage />} />
+        <Route path="/services/legal" element={<LegalPage />} />
+        <Route path="/services/new-to-canada" element={<NewCanada />} />
       </Routes>
     </Router>
   );
