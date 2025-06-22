@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 export default function LoginUI() {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -13,39 +14,56 @@ export default function LoginUI() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      const res = await axios.post('https://connectingnepali.onrender.com/api/auth/login', form);
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
 
-      // ✅ Save token and user
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      const data = await response.json();
 
-      console.log('Login successful, navigating to dashboard');
-      navigate('/dashboard'); // ✅ Redirect to dashboard
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Save token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('googleUser', JSON.stringify(data.user));
+
+      navigate('/');
     } catch (err) {
-      console.error('Login error:', err);
-      setMessage(err.response?.data?.error || 'Login failed');
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#2B3C4E] flex flex-col justify-center items-center">
-      <img src="/logo.png" alt="Logo" className="mb-6 w-12" />
-      <div className="bg-white w-full max-w-md p-8 rounded shadow-md">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Sign In</h2>
+  const handleGoogleSuccess = (credentialResponse) => {
+    const decoded = jwtDecode(credentialResponse.credential);
+    localStorage.setItem('token', credentialResponse.credential);
+    localStorage.setItem('googleUser', JSON.stringify(decoded));
+    navigate('/');
+  };
 
-        {message && <p className="text-red-500 mb-4 text-sm">{message}</p>}
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="bg-white p-6 rounded shadow max-w-md w-full space-y-6">
+        <h2 className="text-2xl font-bold text-center">Login to Your Account</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             name="email"
-            placeholder="Email Address"
+            placeholder="Email"
             value={form.email}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded text-sm"
             required
+            className="w-full border px-4 py-2 rounded"
           />
           <input
             type="password"
@@ -53,24 +71,31 @@ export default function LoginUI() {
             placeholder="Password"
             value={form.password}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded text-sm"
             required
+            className="w-full border px-4 py-2 rounded"
           />
+
           <button
             type="submit"
-            className="w-full bg-cyan-800 text-white py-2 rounded hover:bg-cyan-900"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-      </div>
 
-      <footer className="mt-8 text-white text-sm">
-        <Link to="/" className="hover:underline">
-          Don’t have an account? Register
-        </Link>
-      </footer>
+        <div className="text-center text-sm text-gray-500">or</div>
+
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => alert('Google Login Failed')}
+        />
+
+        <div className="text-sm text-center text-gray-600 mt-4">
+          Don't have an account?{' '}
+          <a href="/register" className="text-blue-600 underline">Register</a>
+        </div>
+      </div>
     </div>
   );
 }
-
