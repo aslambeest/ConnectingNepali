@@ -1,21 +1,27 @@
 require('dotenv').config();
-console.log("EMAIL_USER =", process.env.EMAIL_USER);
-console.log("EMAIL_PASS =", process.env.EMAIL_PASS ? '✔️ Present' : '❌ MISSING');
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
+
+// Routes
 const authRoutes = require('./routes/auth');
-require('dotenv').config();
+const uploadRoutes = require('./routes/upload'); // ✅ NEW: upload route
 
 const app = express();
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/auth', authRoutes);
+// Static file serving for uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // ✅ NEW
 
-// Use environment variable for MongoDB URI and port
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes); // ✅ NEW
+
+// MongoDB connection
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 

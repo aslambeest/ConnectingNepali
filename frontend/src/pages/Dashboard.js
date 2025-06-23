@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import UserProfileDropdown from '../components/UserProfileDropdown';
+import UserProfileModal from '../components/UserProfileModal';
+
 import {
   Home, Building, CreditCard, BookOpen, Briefcase, Users, Languages,
   Store, ShieldCheck, Globe, Megaphone, CalendarClock
@@ -14,27 +17,8 @@ import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 const Dashboard = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('googleUser'));
-  const [profilePic, setProfilePic] = useState(() => localStorage.getItem('profilePic'));
 
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        localStorage.setItem('profilePic', reader.result);
-        setProfilePic(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('googleUser');
-    // DO NOT remove profilePic so it's retained
-    // localStorage.removeItem('profilePic');
-    navigate('/login-ui');
-  };
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const announcements = [
     {
@@ -75,6 +59,8 @@ const Dashboard = () => {
     { name: 'New to Canada Guide', icon: Globe, link: '/services/new-to-canada' }
   ];
 
+  const handleProfileClick = () => setShowProfileModal(true);
+
   return (
     <div className="flex flex-row w-full min-h-screen overflow-hidden">
       {/* Sidebar */}
@@ -102,25 +88,7 @@ const Dashboard = () => {
             <p className="text-sm text-gray-500">Welcome,</p>
             <h1 className="text-xl font-semibold">{user?.name || 'Guest'}</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <label className="cursor-pointer relative">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleUpload}
-                className="hidden"
-              />
-              <img
-                src={profilePic || user?.picture}
-                alt="Profile"
-                className="w-16 h-16 rounded-full border shadow hover:ring-2 hover:ring-blue-400"
-                title="Click to upload profile picture"
-              />
-            </label>
-            <button onClick={handleLogout} className="text-red-600 font-medium hover:underline">
-              Log Out
-            </button>
-          </div>
+          <UserProfileDropdown onProfileClick={handleProfileClick} />
         </div>
 
         {/* Carousel */}
@@ -138,7 +106,7 @@ const Dashboard = () => {
             <SwiperSlide>
               <div className="w-full h-64">
                 <img
-                  src="https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1050115383%2F998415394483%2F1%2Foriginal.20250610-192241?crop=focalpoint&fit=crop&w=940&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.5&fp-y=0.5&s=424b9fdb9912886d192bb13345a958b6"
+                  src="https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1050115383%2F998415394483%2F1%2Foriginal.20250610-192241"
                   alt="Nepal Slide"
                   className="w-full h-full object-cover rounded-xl"
                 />
@@ -147,7 +115,7 @@ const Dashboard = () => {
             <SwiperSlide>
               <div className="w-full h-64">
                 <img
-                  src="https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1042114103%2F2195299412973%2F1%2Foriginal.20250530-044823?w=940&auto=format%2Ccompress&q=75&sharp=10&s=650b2b8f26b217ea2cee14cc589e9273"
+                  src="https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1042114103%2F2195299412973%2F1%2Foriginal.20250530-044823"
                   alt="Canada Slide"
                   className="w-full h-full object-cover rounded-xl"
                 />
@@ -156,7 +124,7 @@ const Dashboard = () => {
             <SwiperSlide>
               <div className="w-full h-64">
                 <img
-                  src="https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1050114013%2F998415394483%2F1%2Foriginal.20250610-192107?crop=focalpoint&fit=crop&w=940&auto=format%2Ccompress&q=75&sharp=10&fp-x=0.481060606061&fp-y=0.61433447099&s=13fdb076c14a2983aa9d3e7364b22293"
+                  src="https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F1050114013%2F998415394483%2F1%2Foriginal.20250610-192107"
                   alt="Community Slide"
                   className="w-full h-full object-cover rounded-xl"
                 />
@@ -199,6 +167,13 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
+
+        {/* User Profile Modal */}
+        <UserProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={user}
+        />
       </main>
     </div>
   );

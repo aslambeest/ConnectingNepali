@@ -1,16 +1,20 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
-const User = require('../models/User');
-
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const CLIENT_URL = 'http://localhost:3000'; // Frontend base URL
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const User = require('../models/User');
 
-// Email transport (Gmail)
+// ✅ Constants
+const CLIENT_URL = 'http://localhost:3000'; // Change for production
+
+// ✅ Generate referral code
+const generateReferralCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
+// ✅ Nodemailer transporter
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
@@ -21,39 +25,30 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Generate referral code
-const generateReferralCode = () => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
-
-// 🔐 REGISTER
+// ✅ REGISTER Route
 router.post('/register', async (req, res) => {
-  const { name, email, password, referredBy } = req.body;
+  const { name, email, password, referredBy, dob, visaStatus } = req.body;
 
   try {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ error: 'Email already exists' });
 
     const hashed = await bcrypt.hash(password, 10);
-    let referrer = null;
-
-    if (referredBy) {
-      referrer = await User.findOne({ referralCode: referredBy });
-    }
-
-    const rewardPoints = referrer ? 100 : 0;
-    const referralCode = generateReferralCode();
     const verificationToken = crypto.randomBytes(32).toString('hex');
+    const referrer = referredBy ? await User.findOne({ referralCode: referredBy }) : null;
 
     const user = new User({
       name,
       email,
       password: hashed,
-      referralCode,
+      dob,
+      visaStatus,
+      referralCode: generateReferralCode(),
       referredBy: referrer ? referrer._id : null,
-      rewardPoints,
+      rewardPoints: referrer ? 100 : 0,
       isVerified: false,
-      verificationToken
+      verificationToken,
+      verificationTokenCreatedAt: Date.now()
     });
 
     await user.save();
@@ -63,39 +58,45 @@ router.post('/register', async (req, res) => {
       await referrer.save();
     }
 
-    const verifyUrl = `http://localhost:5000/api/auth/verify-email/${verificationToken}`;
-    const mailOptions = {
+    const verifyUrl = `${CLIENT_URL}/verify-email/${verificationToken}`;
+    await transporter.sendMail({
       from: 'Connecting Nepali <noreply@connectingnepali.com>',
       to: email,
       subject: 'Verify your Email',
-      html: `<p>Thanks for registering. Please <a href="${verifyUrl}">verify your email</a> to activate your account.</p>`
-    };
+      html: `<p>Click to verify your email: <a href="${verifyUrl}">${verifyUrl}</a></p>`
+    });
 
-    await transporter.sendMail(mailOptions);
+    console.log('✅ Verification token:', verificationToken);
+    res.status(200).json({ message: 'Verification email sent.' });
 
-    res.status(200).json({ message: 'Verification email sent. Please check your inbox.' });
-
-  } catch (e) {
-    console.error('❌ Registration error:', e);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// ✅ VERIFY EMAIL (API Endpoint)
-router.get('/verify-email/:token', async (req, res) => {
-  try {
-    const user = await User.findOne({ verificationToken: req.params.token });
-    if (!user) return res.redirect(`${CLIENT_URL}/verify-email/invalid`);
-
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    await user.save();
-
-    res.redirect(`${CLIENT_URL}/verify-email/success`);
   } catch (err) {
-    console.error('❌ Verification error:', err);
-    res.redirect(`${CLIENT_URL}/verify-email/error`);
+    console.error('❌ Registration error:', err);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+// 🔐 LOGIN
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'User not found' });
+
+    if (!user.isVerified) return res.status(400).json({ error: 'Email not verified' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Incorrect password' });
+
+    // Token generation (basic, replace with JWT in production)
+    const token = `mock-token-${user._id}`;
+
+    res.status(200).json({ token, user: { name: user.name, email: user.email } });
+
+  } catch (err) {
+    console.error('❌ Login error:', err);
+    res.status(500).json({ error: 'Login failed' });
   }
 });
 
+// ✅ Export the router
 module.exports = router;
