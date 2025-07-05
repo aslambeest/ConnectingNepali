@@ -11,7 +11,8 @@ const RegisterUI = () => {
     confirmPassword: '',
     dob: '',
     visaStatus: '',
-    referredBy: ''
+    referredBy: '',
+    licenseClass: '' // ✅ added license class to state
   });
 
   const handleChange = (e) => {
@@ -109,9 +110,33 @@ const RegisterUI = () => {
               <option value="Permanent Resident">Permanent Resident</option>
               <option value="Visitor Visa">Visitor Visa</option>
               <option value="Refugee Claimant">Refugee Claimant</option>
-              <option value="Citizen">Citizen</option>
+              <option value="Citizen">Citizens</option>
             </select>
           </div>
+
+          {/* ✅ License Class dropdown added below Visa Status */}
+          <div>
+            <label className="text-sm text-gray-600">License Class</label>
+            <select
+              name="licenseClass"
+              value={form.licenseClass}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="" disabled>Select License Class</option>
+              <option value="7L">7L – New drivers; must be supervised</option>
+              <option value="7N">7N – Novice drivers; can drive alone with limits</option>
+              <option value="5">5 – Cars, SUVs, light trucks, motorhomes (up to 2-axle)</option>
+              <option value="8L/8">8L / 8 – Motorcycles, ATVs, all-terrain cycles</option>
+              <option value="Limited-speed">Limited-speed bikes (≤ 50cc, ≤ 70 km/h)</option>
+              <option value="4">4 – Taxis, ambulances, small/medium buses</option>
+              <option value="3">3 – Multi-axle trucks, mobile cranes, heavy trailers</option>
+              <option value="2">2 – Buses including school and special-activity</option>
+              <option value="1">1 – Tractor-trailers; all Class 1–5 vehicles</option>
+            </select>
+          </div>
+
           <div>
             <label className="text-sm text-gray-600">Referral Code (optional)</label>
             <input
@@ -123,7 +148,6 @@ const RegisterUI = () => {
             />
           </div>
 
-          {/* ✅ Centered Register Button */}
           <div className="flex justify-center">
             <button
               type="submit"

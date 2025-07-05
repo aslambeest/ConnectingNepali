@@ -11,7 +11,8 @@ const RegisterUI = () => {
     confirmPassword: '',
     dob: '',
     visaStatus: '',
-    referredBy: ''
+    referredBy: '',
+    licenseClass: ''
   });
 
   const handleChange = (e) => {
@@ -27,7 +28,11 @@ const RegisterUI = () => {
     try {
       const payload = { ...form };
       delete payload.confirmPassword;
-      await axios.post('http://localhost:5000/api/auth/register', payload);
+
+      // ✅ Use environment-based BASE_URL
+      const BASE_URL = process.env.REACT_APP_API_URL;
+      await axios.post(`${BASE_URL}/api/auth/register`, payload);
+
       alert('✅ Registration successful! Please verify your email.');
       navigate('/login-ui');
     } catch (err) {
@@ -112,6 +117,29 @@ const RegisterUI = () => {
               <option value="Citizen">Citizen</option>
             </select>
           </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">License Class</label>
+            <select
+              name="licenseClass"
+              value={form.licenseClass}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700"
+            >
+              <option value="" disabled>Select License Class</option>
+              <option value="7L">7L – New drivers; must be supervised</option>
+              <option value="7N">7N – Novice drivers; can drive alone with limits</option>
+              <option value="5">5 – Cars, SUVs, light trucks, motorhomes (up to 2-axle)</option>
+              <option value="8L/8">8L / 8 – Motorcycles, ATVs, all-terrain cycles</option>
+              <option value="Limited-speed">Limited-speed bikes (≤ 50cc, ≤ 70 km/h)</option>
+              <option value="4">4 – Taxis, ambulances, small/medium buses</option>
+              <option value="3">3 – Multi-axle trucks, mobile cranes, heavy trailers</option>
+              <option value="2">2 – Buses including school and special-activity</option>
+              <option value="1">1 – Tractor-trailers; all Class 1–5 vehicles</option>
+            </select>
+          </div>
+
           <div>
             <label className="text-sm text-gray-600">Referral Code (optional)</label>
             <input
@@ -123,7 +151,6 @@ const RegisterUI = () => {
             />
           </div>
 
-          {/* ✅ Centered Register Button */}
           <div className="flex justify-center">
             <button
               type="submit"
