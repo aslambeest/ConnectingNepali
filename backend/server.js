@@ -8,14 +8,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 
-// Route imports
 const authRoutes = require('./routes/auth');
 const uploadRoutes = require('./routes/upload');
+const userRoutes = require('./routes/user'); // ✅ NEW: user routes
 
 const app = express();
 
-// Dynamic CORS configuration for dev & production
+// Allowed frontend origins
 const allowedOrigins = [
+  'http://localhost:3001',
   'http://localhost:3000',
   'https://connectingnepali-frontend.onrender.com'
 ];
@@ -31,17 +32,17 @@ app.use(cors({
   credentials: true
 }));
 
-// Middleware
 app.use(express.json());
 
-// Serve static files (e.g. uploaded images)
+// Serve static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// API routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/user', userRoutes); // ✅ NEW route mount
 
-// MongoDB connection and server start
+// MongoDB connection
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/connectingnepali';
 

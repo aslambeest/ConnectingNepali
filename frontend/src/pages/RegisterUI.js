@@ -12,7 +12,7 @@ const RegisterUI = () => {
     dob: '',
     visaStatus: '',
     referredBy: '',
-    licenseClass: ''
+    licenseType: '' // ✅ Corrected from licenseClass
   });
 
   const handleChange = (e) => {
@@ -29,7 +29,6 @@ const RegisterUI = () => {
       const payload = { ...form };
       delete payload.confirmPassword;
 
-      // ✅ Use environment-based BASE_URL
       const BASE_URL = process.env.REACT_APP_API_URL;
       await axios.post(`${BASE_URL}/api/auth/register`, payload);
 
@@ -121,8 +120,8 @@ const RegisterUI = () => {
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">License Class</label>
             <select
-              name="licenseClass"
-              value={form.licenseClass}
+              name="licenseType" // ✅ Updated here
+              value={form.licenseType}
               onChange={handleChange}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700"

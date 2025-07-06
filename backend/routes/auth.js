@@ -26,7 +26,7 @@ const transporter = nodemailer.createTransport({
 
 // ✅ REGISTER
 router.post('/register', async (req, res) => {
-  const { name, email, password, referredBy, dob, visaStatus } = req.body;
+  const { name, email, password, referredBy, dob, visaStatus, licenseType } = req.body;
 
   try {
     const existing = await User.findOne({ email });
@@ -42,6 +42,7 @@ router.post('/register', async (req, res) => {
       password: hashed,
       dob,
       visaStatus,
+      licenseType,
       referralCode: generateReferralCode(),
       referredBy: referrer ? referrer._id : null,
       rewardPoints: referrer ? 100 : 0,
@@ -87,17 +88,18 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Incorrect password' });
 
-    // Token generation (placeholder; replace with JWT in production)
     const token = `mock-token-${user._id}`;
 
-    // ✅ Include full profile details
     res.status(200).json({
       token,
       user: {
+        _id: user._id,
         name: user.name,
         email: user.email,
         dob: user.dob || 'N/A',
         visaStatus: user.visaStatus || 'N/A',
+        licenseType: user.licenseType || null,
+        airportPickupEnrollment: user.airportPickupEnrollment || null,
         referralCode: user.referralCode || 'N/A',
         rewardPoints: user.rewardPoints || 0
       }
@@ -134,6 +136,40 @@ router.get('/verify-email/:token', async (req, res) => {
   } catch (err) {
     console.error('❌ Email verification error:', err);
     res.status(500).json({ status: 'error' });
+  }
+});
+
+router.put('/airport-pickup', async (req, res) => {
+  const { userId, enroll } = req.body;
+  console.log('📥 Received request for airport-pickup');
+  console.log('➡️ Payload:', req.body);
+
+  if (!userId || typeof enroll !== 'boolean') {
+    console.log('❌ Invalid input');
+    return res.status(400).json({ success: false, error: 'Invalid input' });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { airportPickupEnrollment: enroll },
+      { new: true }
+    );
+
+    if (!user) {
+      console.log('❌ User not found in DB');
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    console.log('✅ Updated user:', user._id);
+    return res.status(200).json({
+      success: true,
+      message: 'Airport pickup enrollment updated successfully',
+      airportPickupEnrollment: user.airportPickupEnrollment
+    });
+  } catch (err) {
+    console.error('🔥 Caught server error:', err);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

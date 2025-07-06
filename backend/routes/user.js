@@ -1,23 +1,79 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const router = express.Router();
+const User = require('../models/User');
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String },
-  picture: { type: String }, // Google profile picture
-  profilePic: { type: String, default: '' }, // ✅ manually uploaded picture
-  referralCode: { type: String, required: true },
-  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-  rewardPoints: { type: Number, default: 0 },
-  isVerified: { type: Boolean, default: false },
-  verificationToken: { type: String },
-  verificationTokenCreatedAt: { type: Date },
-  verifiedAt: { type: Date },
+// ✅ UPDATE AIRPORT PICKUP ENROLLMENT
+router.put('/airport-pickup', async (req, res) => {
+  const { userId, enroll } = req.body;
+  console.log('📥 Received request for airport-pickup');
+  console.log('➡️ Payload:', req.body);
 
-  // ✅ New fields
-  dob: { type: Date },
-  visaStatus: { type: String, enum: ['Student', 'PR', 'Work Permit', 'Visitor', 'Other'] }
+  // Input validation
+  if (!userId || typeof enroll !== 'boolean') {
+    console.log('❌ Invalid input');
+    return res.status(400).json({ success: false, error: 'Invalid input' });
+  }
 
-}, { timestamps: true });
+  try {
+    // Update user
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { airportPickupEnrollment: enroll },
+      { new: true }
+    );
 
-module.exports = mongoose.models.User || mongoose.model('User', userSchema);
+    if (!user) {
+      console.log('❌ User not found');
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    console.log('✅ Enrollment updated for user:', user._id);
+    return res.status(200).json({
+      success: true,
+      message: 'Airport pickup enrollment updated successfully',
+      airportPickupEnrollment: user.airportPickupEnrollment
+    });
+  } catch (err) {
+    console.error('🔥 Server error during airport pickup update:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// 📊 Admin Dashboard User Stats
+router.get('/admin-stats', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const verifiedUsers = await User.countDocuments({ isVerified: true });
+    const unverifiedUsers = totalUsers - verifiedUsers;
+
+    const airportPickupYes = await User.countDocuments({ airportPickupEnrollment: true });
+    const airportPickupNo = await User.countDocuments({ airportPickupEnrollment: false });
+    const airportPickupNull = await User.countDocuments({ airportPickupEnrollment: null });
+
+    const licenseStats = await User.aggregate([
+      { $match: { licenseType: { $ne: null } } },
+      { $group: { _id: "$licenseType", count: { $sum: 1 } } }
+    ]);
+
+    const referredUsers = await User.countDocuments({ referredBy: { $ne: null } });
+
+    res.json({
+      totalUsers,
+      verifiedUsers,
+      unverifiedUsers,
+      airportPickup: {
+        yes: airportPickupYes,
+        no: airportPickupNo,
+        notSet: airportPickupNull
+      },
+      licenseStats,
+      referredUsers
+    });
+
+  } catch (err) {
+    console.error('❌ Admin stats error:', err);
+    res.status(500).json({ error: 'Failed to fetch admin stats' });
+  }
+});
+
+module.exports = router;

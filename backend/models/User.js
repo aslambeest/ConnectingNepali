@@ -22,7 +22,11 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   verificationToken: { type: String },
   verificationTokenCreatedAt: { type: Date },
-  verifiedAt: { type: Date }
+  verifiedAt: { type: Date },
+
+  // NEW FEATURE FIELDS
+  licenseType: { type: String, default: null }, // e.g., 'Class 5'
+  airportPickupEnrollment: { type: Boolean, default: null } // null = not asked
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

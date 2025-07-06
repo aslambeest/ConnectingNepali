@@ -1,15 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+// Pages
 import LoginUI from './pages/LoginUI';
 import RegisterUI from './pages/RegisterUI';
 import Dashboard from './pages/Dashboard';
-import PrivateRoute from './components/PrivateRoute';
 import ResetPassword from './pages/Reset-Password';
 import VerifyEmailPage from './pages/VerifyEmailPage';
-import VerifyResultPage from './pages/VerifyResultPage'; // NEW: for success/error messages
+import VerifyResultPage from './pages/VerifyResultPage';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin'; // ✅ New
+import AdminRoute from './components/AdminRoute'; // ✅ New
 
-// Service Pages
+// Services
 import AirportPage from './pages/services/AirportPage';
 import HousingPage from './pages/services/HousingPage';
 import SinBankPage from './pages/services/SinBankPage';
@@ -20,6 +23,9 @@ import LanguagePage from './pages/services/LanguagePage';
 import DirectoryPage from './pages/services/DirectoryPage';
 import LegalPage from './pages/services/LegalPage';
 import NewCanada from './pages/services/NewCanada';
+
+// Components
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -44,14 +50,15 @@ function App() {
           }
         />
 
+        {/* ✅ Admin Route */}
+        <Route path="/admin" element={<AdminRoute />} />
+
         {/* 🌐 Public Routes */}
         <Route path="/login-ui" element={<LoginUI />} />
         <Route path="/register" element={<RegisterUI />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-
-        {/* 📧 Email Verification Routes */}
         <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-       
+        <Route path="/verify-result" element={<VerifyResultPage />} />
 
         {/* 📌 Services */}
         <Route path="/services/airport" element={<AirportPage />} />
@@ -64,7 +71,7 @@ function App() {
         <Route path="/services/directory" element={<DirectoryPage />} />
         <Route path="/services/legal" element={<LegalPage />} />
         <Route path="/services/new-to-canada" element={<NewCanada />} />
-        
+
       </Routes>
     </Router>
   );
