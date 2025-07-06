@@ -9,7 +9,7 @@ export default function LoginUI() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const API_URL = 'http://localhost:5000'; // Replace with process.env.REACT_APP_API_URL in production
+  const API_URL = 'https://connectingnepali.onrender.com/'; // Replace with process.env.REACT_APP_API_URL in production
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
