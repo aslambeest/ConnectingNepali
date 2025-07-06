@@ -18,7 +18,8 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:3000',
-  'https://connectingnepali-frontend.onrender.com'
+  'https://connectingnepali-frontend.onrender.com',
+  'https://connectingnepali.onrender.com'
 ];
 
 app.use(cors({
