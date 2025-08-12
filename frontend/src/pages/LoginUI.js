@@ -1,34 +1,45 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 export default function LoginUI() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const API_URL = 'https://connectingnepali.onrender.com'; // Replace with process.env.REACT_APP_API_URL in production
+  const [status, setStatus] = useState({ type: "", msg: "" }); // "err" | "ok" | ""
+
+  const API_URL = "https://connectingnepali.onrender.com"; // use env in prod
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const persistAndGo = (token, user) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("googleUser", JSON.stringify(user));
+    navigate("/dashboard");
   };
 
   const updateAirportPickup = async (userId, enroll) => {
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/api/user/airport-pickup`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ userId, enroll }),
       });
-
       const data = await res.json();
       return data.success;
     } catch (error) {
-      console.error('❌ Error updating airport pickup:', error.message);
+      console.error("❌ Error updating airport pickup:", error.message);
       return false;
     }
   };
@@ -36,51 +47,75 @@ export default function LoginUI() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setStatus({ type: "", msg: "" });
 
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Login failed");
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-
-      const user = data.user;
+      const { token, user } = data;
+      localStorage.setItem("token", token);
 
       if (user.licenseType && user.airportPickupEnrollment === null) {
-        setLoggedInUser({ ...user, token: data.token });
+        setLoggedInUser({ ...user, token });
         setShowModal(true);
       } else {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('googleUser', JSON.stringify(user));
-        navigate('/dashboard');
+        persistAndGo(token, user);
       }
     } catch (err) {
-      alert(err.message);
+      setStatus({ type: "err", msg: err.message || "Login failed" });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSuccess = (credentialResponse) => {
+  // QUICK path
+  const handleGoogleSuccessQuick = (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
-    localStorage.setItem('token', credentialResponse.credential);
-    localStorage.setItem('googleUser', JSON.stringify(decoded));
-    navigate('/dashboard');
+    localStorage.setItem("token", credentialResponse.credential);
+    localStorage.setItem("googleUser", JSON.stringify(decoded));
+    navigate("/dashboard");
+  };
+
+  // RECOMMENDED path
+  const handleGoogleSuccessSecure = async (credentialResponse) => {
+    try {
+      const resp = await fetch(`${API_URL}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Google login failed");
+      persistAndGo(data.token, data.user);
+    } catch (e) {
+      setStatus({ type: "err", msg: e.message || "Google login failed" });
+    }
   };
 
   return (
     <>
       <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
         <div className="bg-white p-6 rounded shadow max-w-md w-full space-y-6">
-          <h2 className="text-2xl font-bold text-center">Login to Your Account</h2>
+          <h2 className="text-2xl font-bold text-center">LOGIN TO NEPALI CIRCLE</h2>
+
+          {status.msg && (
+            <p
+              className={`text-center p-2 rounded ${
+                status.type === "err"
+                  ? "bg-red-50 text-red-700 border border-red-200"
+                  : "bg-green-50 text-green-700 border border-green-200"
+              }`}
+            >
+              {status.msg}
+            </p>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
@@ -91,42 +126,69 @@ export default function LoginUI() {
               onChange={handleChange}
               required
               className="w-full border px-4 py-2 rounded"
+              autoComplete="email"
             />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="w-full border px-4 py-2 rounded"
-            />
+
+            <div className="relative">
+              <input
+                type={showPw ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full border px-4 py-2 rounded pr-20"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600"
+                aria-label={showPw ? "Hide password" : "Show password"}
+              >
+                {showPw ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            <div className="text-right">
+              <Link
+                to="/forgot-password" // ✅ now matches App.js
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-60"
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
-          <div className="text-center text-sm text-gray-500">or</div>
+          <div className="text-center text-sm text-gray-500">OR</div>
 
           <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => alert('Google Login Failed')}
+            onSuccess={handleGoogleSuccessSecure}
+            // onSuccess={handleGoogleSuccessQuick}
+            onError={() =>
+              setStatus({ type: "err", msg: "Google Login Failed" })
+            }
           />
 
           <div className="text-sm text-center text-gray-600 mt-4">
-            Don't have an account?{' '}
-            <a href="/register" className="text-blue-600 underline">Register</a>
+            Don&apos;t have an account?{" "}
+            <Link to="/register" className="text-blue-600 underline">
+              REGISTER
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Airport Pickup Modal */}
-      {showModal && (
+      {showModal && loggedInUser && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg w-96 text-center">
             <h3 className="text-lg font-semibold mb-4">
@@ -137,10 +199,9 @@ export default function LoginUI() {
                 onClick={async () => {
                   const success = await updateAirportPickup(loggedInUser._id, true);
                   if (success) {
-                    localStorage.setItem('token', loggedInUser.token);
-                    loggedInUser.airportPickupEnrollment = true;
-                    localStorage.setItem('googleUser', JSON.stringify(loggedInUser));
-                    navigate('/dashboard');
+                    const user = { ...loggedInUser, airportPickupEnrollment: true };
+                    localStorage.setItem("googleUser", JSON.stringify(user));
+                    navigate("/dashboard");
                   }
                   setShowModal(false);
                 }}
@@ -152,10 +213,9 @@ export default function LoginUI() {
                 onClick={async () => {
                   const success = await updateAirportPickup(loggedInUser._id, false);
                   if (success) {
-                    localStorage.setItem('token', loggedInUser.token);
-                    loggedInUser.airportPickupEnrollment = false;
-                    localStorage.setItem('googleUser', JSON.stringify(loggedInUser));
-                    navigate('/dashboard');
+                    const user = { ...loggedInUser, airportPickupEnrollment: false };
+                    localStorage.setItem("googleUser", JSON.stringify(user));
+                    navigate("/dashboard");
                   }
                   setShowModal(false);
                 }}

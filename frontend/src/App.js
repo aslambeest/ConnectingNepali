@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Pages
+import ForgotPassword from './pages/ForgotPassword';
 import LoginUI from './pages/LoginUI';
 import RegisterUI from './pages/RegisterUI';
 import Dashboard from './pages/Dashboard';
@@ -59,6 +60,9 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
         <Route path="/verify-result" element={<VerifyResultPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+
 
         {/* 📌 Services */}
         <Route path="/services/airport" element={<AirportPage />} />
