@@ -11,9 +11,13 @@ export default function LoginUI() {
 
   const [showModal, setShowModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const [status, setStatus] = useState({ type: "", msg: "" }); // "err" | "ok" | ""
+  const [status, setStatus] = useState({ type: "", msg: "" });
 
-  const API_URL = "https://connectingnepali.onrender.com"; // use env in prod
+  // Use local in dev, production URL otherwise
+  const API_URL =
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:5000"
+      : "https://connectingnepali.onrender.com";
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -75,7 +79,7 @@ export default function LoginUI() {
     }
   };
 
-  // QUICK path
+  // QUICK path (bypasses backend) — not recommended for production
   const handleGoogleSuccessQuick = (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     localStorage.setItem("token", credentialResponse.credential);
@@ -83,13 +87,14 @@ export default function LoginUI() {
     navigate("/dashboard");
   };
 
-  // RECOMMENDED path
+  // SECURE path (via backend)
   const handleGoogleSuccessSecure = async (credentialResponse) => {
     try {
       const resp = await fetch(`${API_URL}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential: credentialResponse.credential }),
+        // ✅ send `token` to match backend's req.body.token
+        body: JSON.stringify({ token: credentialResponse.credential }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || "Google login failed");
@@ -144,7 +149,6 @@ export default function LoginUI() {
                 type="button"
                 onClick={() => setShowPw((s) => !s)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-600"
-                aria-label={showPw ? "Hide password" : "Show password"}
               >
                 {showPw ? "Hide" : "Show"}
               </button>
@@ -152,7 +156,7 @@ export default function LoginUI() {
 
             <div className="text-right">
               <Link
-                to="/forgot-password" // ✅ now matches App.js
+                to="/forgot-password"
                 className="text-sm text-blue-600 hover:underline"
               >
                 Forgot password?
@@ -172,7 +176,7 @@ export default function LoginUI() {
 
           <GoogleLogin
             onSuccess={handleGoogleSuccessSecure}
-            // onSuccess={handleGoogleSuccessQuick}
+            // onSuccess={handleGoogleSuccessQuick} // only for dev testing
             onError={() =>
               setStatus({ type: "err", msg: "Google Login Failed" })
             }

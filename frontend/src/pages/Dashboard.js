@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import UserProfileModal from '../components/UserProfileModal';
+import logo from '../assets/logo.png'; // <-- Make sure this path is correct
 
 import {
   Home, Building, CreditCard, BookOpen, Briefcase, Users, Languages,
@@ -17,7 +18,6 @@ import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 const Dashboard = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('googleUser'));
-
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   const announcements = [
@@ -65,8 +65,19 @@ const Dashboard = () => {
     <div className="flex flex-row w-full min-h-screen overflow-hidden">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 text-white p-4 space-y-6 flex-shrink-0">
-        <div className="text-sm font-semibold">NEPALI CIRCLE</div>
-        <nav className="space-y-2">
+        {/* Logo */}
+        <div className="flex flex-col items-center justify-center py-6">
+          <a href="/">
+            <img
+              src={logo}
+              alt="Nepali Circle Logo"
+              className="h-24 w-auto object-contain bg-white p-2 rounded-xl shadow-lg"
+            />
+          </a>
+        </div>
+
+        {/* Menu */}
+        <nav className="space-y-2 mt-4">
           {services.map((item, index) => (
             <a
               key={index}
@@ -115,7 +126,7 @@ const Dashboard = () => {
             <SwiperSlide>
               <div className="w-full h-64">
                 <img
-                  src="https://scontent.fyvr4-1.fna.fbcdn.net/v/t39.30808-6/481138765_666853182347196_3338070010209905947_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=8ujRo2JAvKcQ7kNvwGP7mfh&_nc_oc=AdlSapDwrFOpkye4Kofie5UeJRor3wQ5mfmOf21Gj6t6-TwDJMB3YqiSZjaeXdvgCgW5E37JIkVORWna24opGIZD&_nc_zt=23&_nc_ht=scontent.fyvr4-1.fna&_nc_gid=7FsOzsRVA-RA_P4SABgfvw&oh=00_AfO_1wTQWtK01pzAwU1tVw6IF-eUYdvJ9FNcj-setNA9nQ&oe=685E957C"
+                  src="https://scontent.fyvr4-1.fna.fbcdn.net/v/t39.30808-6/481138765_666853182347196_3338070010209905947_n.jpg"
                   alt="Canada Slide"
                   className="w-full h-full object-cover rounded-xl"
                 />
@@ -133,15 +144,13 @@ const Dashboard = () => {
           </Swiper>
         </div>
 
-        {/* Dashboard Summary Panel */}
+        {/* Dashboard Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          {/* Welcome Message */}
           <div className="bg-white shadow p-4 rounded">
             <h2 className="text-lg font-semibold mb-2">👋 Welcome to Nepali Circle!</h2>
-            <p className="text-sm text-gray-700">जहाँ नेपाली मनहरू एक आपसमा जोडिन्छन्</p>
+            <p className="text-sm text-gray-700">जहाँ नेपाली मनहरू जोडिन्छन्</p>
           </div>
 
-          {/* Announcements */}
           <div className="bg-white shadow p-4 rounded">
             <h2 className="flex items-center gap-2 text-lg font-semibold mb-2">
               <Megaphone className="text-blue-600" size={20} /> Announcements
@@ -154,7 +163,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Events */}
           <div className="bg-white shadow p-4 rounded">
             <h2 className="flex items-center gap-2 text-lg font-semibold mb-2">
               <CalendarClock className="text-blue-600" size={20} /> Events
@@ -168,7 +176,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* User Profile Modal */}
+        {/* Profile Modal */}
         <UserProfileModal
           isOpen={showProfileModal}
           onClose={() => setShowProfileModal(false)}
