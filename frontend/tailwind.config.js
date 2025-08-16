@@ -1,10 +1,10 @@
-module.exports = { content: ['./src/**/*.{js,jsx}'], theme: { extend: {} }, plugins: [] }module.exports = {
+module.exports = {
   content: [
     './src/**/*.{js,jsx,ts,tsx}',
-    './public/index.html'
+    './public/index.html',
   ],
   theme: {
     extend: {},
   },
   plugins: [],
-}
+};
