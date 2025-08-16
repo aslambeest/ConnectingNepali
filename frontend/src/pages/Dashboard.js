@@ -64,7 +64,7 @@ const Dashboard = () => {
   return (
     <div className="flex flex-row w-full min-h-screen overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-4 space-y-6 flex-shrink-0">
+      <aside className="w-64 bg-purple-900 text-white p-4 space-y-6 flex-shrink-0">
         {/* Logo */}
         <div className="flex flex-col items-center justify-center py-6">
           <a href="/">
@@ -82,7 +82,7 @@ const Dashboard = () => {
             <a
               key={index}
               href={item.link}
-              className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700"
+              className="flex items-center gap-2 px-3 py-2 rounded hover:bg-purple-700 transition"
             >
               <item.icon size={18} />
               {item.name}
@@ -97,7 +97,9 @@ const Dashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <p className="text-sm text-gray-500">Welcome,</p>
-            <h1 className="text-xl font-semibold">{user?.name || 'Guest'}</h1>
+            <h1 className="text-xl font-semibold text-purple-800">
+              {user?.name || 'Guest'}
+            </h1>
           </div>
           <UserProfileDropdown onProfileClick={handleProfileClick} />
         </div>
@@ -147,13 +149,13 @@ const Dashboard = () => {
         {/* Dashboard Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white shadow p-4 rounded">
-            <h2 className="text-lg font-semibold mb-2">👋 Welcome to Nepali Circle!</h2>
+            <h2 className="text-lg font-semibold mb-2 text-purple-800">👋 Welcome to Nepali Circle!</h2>
             <p className="text-sm text-gray-700">जहाँ नेपाली मनहरू जोडिन्छन्</p>
           </div>
 
           <div className="bg-white shadow p-4 rounded">
-            <h2 className="flex items-center gap-2 text-lg font-semibold mb-2">
-              <Megaphone className="text-blue-600" size={20} /> Announcements
+            <h2 className="flex items-center gap-2 text-lg font-semibold mb-2 text-purple-800">
+              <Megaphone className="text-purple-600" size={20} /> Announcements
             </h2>
             {announcements.map((a, i) => (
               <div key={i} className="mb-3 border-b pb-2">
@@ -164,8 +166,8 @@ const Dashboard = () => {
           </div>
 
           <div className="bg-white shadow p-4 rounded">
-            <h2 className="flex items-center gap-2 text-lg font-semibold mb-2">
-              <CalendarClock className="text-blue-600" size={20} /> Events
+            <h2 className="flex items-center gap-2 text-lg font-semibold mb-2 text-purple-800">
+              <CalendarClock className="text-purple-600" size={20} /> Events
             </h2>
             {events.map((e, i) => (
               <div key={i} className="mb-3 border-b pb-2">

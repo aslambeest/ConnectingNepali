@@ -8,12 +8,10 @@ export default function LoginUI() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
-
   const [showModal, setShowModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [status, setStatus] = useState({ type: "", msg: "" });
 
-  // Use local in dev, production URL otherwise
   const API_URL =
     process.env.NODE_ENV === "development"
       ? "http://localhost:5000"
@@ -79,7 +77,6 @@ export default function LoginUI() {
     }
   };
 
-  // QUICK path (bypasses backend) — not recommended for production
   const handleGoogleSuccessQuick = (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     localStorage.setItem("token", credentialResponse.credential);
@@ -87,13 +84,11 @@ export default function LoginUI() {
     navigate("/dashboard");
   };
 
-  // SECURE path (via backend)
   const handleGoogleSuccessSecure = async (credentialResponse) => {
     try {
       const resp = await fetch(`${API_URL}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // ✅ send `token` to match backend's req.body.token
         body: JSON.stringify({ token: credentialResponse.credential }),
       });
       const data = await resp.json();
@@ -106,9 +101,11 @@ export default function LoginUI() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-100 px-4 overflow-x-hidden">
         <div className="bg-white p-6 rounded shadow max-w-md w-full space-y-6">
-          <h2 className="text-2xl font-bold text-center">LOGIN TO NEPALI CIRCLE</h2>
+          <h2 className="text-2xl font-bold text-center text-purple-700">
+            NEPALI CIRCLE
+          </h2>
 
           {status.msg && (
             <p
@@ -157,7 +154,7 @@ export default function LoginUI() {
             <div className="text-right">
               <Link
                 to="/forgot-password"
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-purple-600 hover:underline"
               >
                 Forgot password?
               </Link>
@@ -166,17 +163,21 @@ export default function LoginUI() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-60"
+              className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-60"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
-          <div className="text-center text-sm text-gray-500">OR</div>
+          {/* 💜 Highlighted OR divider */}
+          <div className="flex items-center justify-center my-2">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="mx-4 text-purple-700 font-semibold">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
 
           <GoogleLogin
             onSuccess={handleGoogleSuccessSecure}
-            // onSuccess={handleGoogleSuccessQuick} // only for dev testing
             onError={() =>
               setStatus({ type: "err", msg: "Google Login Failed" })
             }
@@ -184,14 +185,14 @@ export default function LoginUI() {
 
           <div className="text-sm text-center text-gray-600 mt-4">
             Don&apos;t have an account?{" "}
-            <Link to="/register" className="text-blue-600 underline">
-              REGISTER
+            <Link to="/register" className="text-purple-600 underline">
+              REGISTER HERE
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Airport Pickup Modal */}
+      {/* 💬 Airport Pickup Modal */}
       {showModal && loggedInUser && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg w-96 text-center">
@@ -201,23 +202,36 @@ export default function LoginUI() {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={async () => {
-                  const success = await updateAirportPickup(loggedInUser._id, true);
+                  const success = await updateAirportPickup(
+                    loggedInUser._id,
+                    true
+                  );
                   if (success) {
-                    const user = { ...loggedInUser, airportPickupEnrollment: true };
+                    const user = {
+                      ...loggedInUser,
+                      airportPickupEnrollment: true,
+                    };
                     localStorage.setItem("googleUser", JSON.stringify(user));
                     navigate("/dashboard");
                   }
                   setShowModal(false);
                 }}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
               >
                 Yes
               </button>
+
               <button
                 onClick={async () => {
-                  const success = await updateAirportPickup(loggedInUser._id, false);
+                  const success = await updateAirportPickup(
+                    loggedInUser._id,
+                    false
+                  );
                   if (success) {
-                    const user = { ...loggedInUser, airportPickupEnrollment: false };
+                    const user = {
+                      ...loggedInUser,
+                      airportPickupEnrollment: false,
+                    };
                     localStorage.setItem("googleUser", JSON.stringify(user));
                     navigate("/dashboard");
                   }
