@@ -77,13 +77,6 @@ export default function LoginUI() {
     }
   };
 
-  const handleGoogleSuccessQuick = (credentialResponse) => {
-    const decoded = jwtDecode(credentialResponse.credential);
-    localStorage.setItem("token", credentialResponse.credential);
-    localStorage.setItem("googleUser", JSON.stringify(decoded));
-    navigate("/dashboard");
-  };
-
   const handleGoogleSuccessSecure = async (credentialResponse) => {
     try {
       const resp = await fetch(`${API_URL}/api/auth/google`, {
@@ -101,9 +94,9 @@ export default function LoginUI() {
 
   return (
     <>
-      <div className="min-h-screen w-full flex items-center justify-center bg-gray-100 px-4 overflow-x-hidden">
-        <div className="bg-white p-6 rounded shadow max-w-md w-full space-y-6">
-          <h2 className="text-2xl font-bold text-center text-purple-700">
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-100 px-4 overflow-hidden">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+          <h2 className="text-3xl font-bold text-center text-purple-700 mb-6">
             NEPALI CIRCLE
           </h2>
 
@@ -127,7 +120,7 @@ export default function LoginUI() {
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full border px-4 py-2 rounded"
+              className="w-full border px-4 py-2 rounded focus:ring-2 focus:ring-purple-500"
               autoComplete="email"
             />
 
@@ -139,7 +132,7 @@ export default function LoginUI() {
                 value={form.password}
                 onChange={handleChange}
                 required
-                className="w-full border px-4 py-2 rounded pr-20"
+                className="w-full border px-4 py-2 rounded pr-20 focus:ring-2 focus:ring-purple-500"
                 autoComplete="current-password"
               />
               <button
@@ -163,16 +156,18 @@ export default function LoginUI() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-60"
+              className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 transition duration-200 disabled:opacity-60"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
-          {/* 💜 Highlighted OR divider */}
-          <div className="flex items-center justify-center my-2">
+          {/* OR Divider */}
+          <div className="flex items-center justify-center my-4">
             <div className="flex-grow border-t border-gray-300"></div>
-            <span className="mx-4 text-purple-700 font-semibold">OR</span>
+            <span className="mx-4 text-purple-700 font-bold text-sm tracking-wider">
+              OR
+            </span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
 
@@ -183,7 +178,7 @@ export default function LoginUI() {
             }
           />
 
-          <div className="text-sm text-center text-gray-600 mt-4">
+          <div className="text-sm text-center text-gray-600 mt-6">
             Don&apos;t have an account?{" "}
             <Link to="/register" className="text-purple-600 underline">
               REGISTER HERE
@@ -192,7 +187,7 @@ export default function LoginUI() {
         </div>
       </div>
 
-      {/* 💬 Airport Pickup Modal */}
+      {/* Modal */}
       {showModal && loggedInUser && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg w-96 text-center">
